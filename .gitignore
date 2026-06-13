@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+*.log
+outputs/
+work/
+server.py.bak*
+index.html.bak*
+app.js.bak*
+.vercel/
+node_modules/

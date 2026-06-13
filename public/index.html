@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ChatGPT 代理检测器 v3</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f0f23;color:#e0e0e0;min-height:100vh}
+.header{background:linear-gradient(135deg,#1a1a3e 0%,#2d1b69 100%);padding:24px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.header h1{font-size:1.6rem;color:#fff;margin-bottom:4px}
+.header p{font-size:.85rem;color:#8888aa}
+.container{max-width:1440px;margin:0 auto;padding:24px}
+.card{background:#16162e;border:1px solid rgba(255,255,255,.06);border-radius:12px;margin-bottom:20px}
+.card-head{padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:space-between}
+.card-head h2{font-size:1rem;color:#ccc;font-weight:600}
+.card-body{padding:20px}
+textarea{width:100%;height:180px;padding:14px;background:#0d0d1a;border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#e0e0e0;font-family:"Cascadia Code","Fira Code",Consolas,monospace;font-size:13px;resize:none;line-height:1.6}
+textarea:focus{outline:none;border-color:#7c5cfc}
+textarea::placeholder{color:#555}
+.btn-row{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;align-items:center}
+.btn{padding:10px 20px;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#7c5cfc,#a855f7);color:#fff}
+.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(124,92,252,.4)}
+.btn-primary:disabled,.btn:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.btn-danger{background:linear-gradient(135deg,#ef4444,#dc2626);color:#fff}
+.btn-danger:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(239,68,68,.4)}
+.btn-ghost{background:rgba(255,255,255,.06);color:#aaa;border:1px solid rgba(255,255,255,.1)}
+.btn-ghost:hover{background:rgba(255,255,255,.1);color:#fff}
+.btn-deep{background:linear-gradient(135deg,#f59e0b,#d97706);color:#fff}
+.btn-deep:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(245,158,11,.4)}
+/* Rounds select — match .btn height exactly */
+#roundsSelect{padding:10px 14px;border-radius:8px;background:#0d0d1a;border:1px solid rgba(255,255,255,.1);color:#e0e0e0;font-size:13px;font-weight:600;cursor:pointer;height:38px;appearance:auto}
+#roundsSelect:focus{outline:none;border-color:#7c5cfc}
+.stats-row{display:grid;grid-template-columns:repeat(8,1fr);gap:12px;margin-bottom:20px}
+@media(max-width:1100px){.stats-row{grid-template-columns:repeat(4,1fr)}}
+@media(max-width:600px){.stats-row{grid-template-columns:repeat(2,1fr)}}
+.stat{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:10px;padding:14px;text-align:center}
+.stat-num{font-size:1.6rem;font-weight:700;color:#7c5cfc}
+.stat-label{font-size:.7rem;color:#666;margin-top:4px}
+.results-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+@media(max-width:900px){.results-grid{grid-template-columns:1fr}}
+.filter-bar{display:flex;gap:6px;margin-bottom:12px;flex-wrap:wrap}
+.fbtn{padding:5px 12px;border:1px solid rgba(255,255,255,.1);border-radius:20px;background:transparent;color:#888;font-size:11px;cursor:pointer;transition:all .2s}
+.fbtn.active{border-color:#7c5cfc;color:#7c5cfc;background:rgba(124,92,252,.1)}
+.fbtn:hover{border-color:#7c5cfc;color:#aaa}
+.result-list{max-height:420px;overflow-y:auto}
+.result-list::-webkit-scrollbar{width:6px}
+.result-list::-webkit-scrollbar-track{background:transparent}
+.result-list::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:3px}
+.proxy-item{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(255,255,255,.02);border-radius:8px;margin-bottom:6px;border:1px solid rgba(255,255,255,.04);transition:background .2s}
+.proxy-item:hover{background:rgba(255,255,255,.05)}
+.proxy-item.valid{border-left:3px solid #22c55e}
+.proxy-item.unstable{border-left:3px solid #eab308}
+.proxy-item.invalid{border-left:3px solid #ef4444}
+.proxy-addr{font-family:"Cascadia Code",Consolas,monospace;font-size:12.5px;color:#d0d0d0;word-break:break-all}
+.proxy-meta{display:flex;gap:6px;margin-top:4px;font-size:11px;color:#666;flex-wrap:wrap;align-items:center}
+.tag{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:10px;font-size:10px;font-weight:600}
+.tag-ok{background:rgba(34,197,94,.12);color:#22c55e}
+.tag-unstable{background:rgba(234,179,8,.12);color:#eab308}
+.tag-fail{background:rgba(239,68,68,.12);color:#ef4444}
+.tag-lat{background:rgba(124,92,252,.12);color:#a78bfa}
+.tag-ip{background:rgba(59,130,246,.12);color:#60a5fa}
+.tag-cf{background:rgba(16,185,129,.12);color:#10b981}
+.tag-cf-fail{background:rgba(239,68,68,.12);color:#ef4444}
+.tag-reg{background:rgba(59,130,246,.12);color:#60a5fa}
+.tag-reg-fail{background:rgba(239,68,68,.12);color:#ef4444}
+.tag-dc{background:rgba(245,158,11,.12);color:#f59e0b}
+.tag-res{background:rgba(16,185,129,.12);color:#10b981}
+.speed-dot{width:6px;height:6px;border-radius:50%;display:inline-block}
+.speed-fast{background:#22c55e}
+.speed-mid{background:#eab308}
+.speed-slow{background:#ef4444}
+.empty{text-align:center;padding:40px;color:#444;font-size:13px}
+.copy-btn{padding:4px 10px;border:none;border-radius:5px;background:rgba(124,92,252,.2);color:#a78bfa;font-size:11px;cursor:pointer;opacity:0;transition:opacity .2s}
+.proxy-item:hover .copy-btn{opacity:1}
+.copy-btn:hover{background:rgba(124,92,252,.4)}
+.toast{position:fixed;bottom:30px;left:50%;transform:translateX(-50%) translateY(80px);background:#222;color:#fff;padding:10px 24px;border-radius:8px;font-size:13px;opacity:0;transition:all .3s;z-index:999;pointer-events:none}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.footer{text-align:center;padding:20px;margin-top:10px;border-top:1px solid rgba(255,255,255,.06);color:#555;font-size:12px}
+.footer a{color:#7c5cfc;text-decoration:none;transition:color .2s}
+.footer a:hover{color:#a78bfa}
+.detail-panel{display:none;margin-top:8px;padding:8px 12px;background:rgba(0,0,0,.3);border-radius:6px;font-size:11px;line-height:1.6;color:#888}
+.detail-panel.show{display:block}
+.detail-row{display:flex;gap:8px;align-items:center}
+.detail-key{color:#666;min-width:80px}
+.cap-badge{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:600}
+.cap-ok{background:rgba(34,197,94,.15);color:#22c55e}
+.cap-no{background:rgba(239,68,68,.15);color:#ef4444}
+.gh-link{position:absolute;top:24px;right:32px;display:inline-flex;align-items:center;gap:6px;padding:6px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);border-radius:8px;color:#aaa;text-decoration:none;font-size:12px;transition:all .2s}
+.gh-link:hover{background:rgba(255,255,255,.12);color:#fff}
+.fetch-dropdown{position:relative;display:inline-flex}
+.fetch-btn{position:relative}
+.fetch-menu{display:none;position:absolute;top:100%;left:0;margin-top:2px;background:#1a1a3e;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 0;min-width:240px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.fetch-dropdown::after{content:'';position:absolute;top:100%;left:0;width:100%;height:4px}
+.fetch-dropdown:hover .fetch-menu,.fetch-dropdown.open .fetch-menu,.fetch-menu:hover{display:block}
+.fetch-menu-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;transition:background .15s;font-size:13px;color:#ccc;white-space:nowrap}
+.fetch-menu-item:hover{background:rgba(124,92,252,.15);color:#fff}
+.fetch-menu-item .fetch-icon{font-size:14px}
+.fetch-menu-item .fetch-count{margin-left:auto;font-size:11px;color:#666}
+.fetch-loading{padding:12px 16px;color:#888;font-size:12px;text-align:center}
+/* Grade dropdown for "添加到我的仓库" */
+.grade-dropdown{position:relative;display:inline-flex}
+.grade-dropdown::after{content:'';position:absolute;top:100%;left:0;width:100%;height:4px}
+.grade-menu{display:none;position:absolute;top:100%;left:0;margin-top:2px;background:#1a1a3e;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 0;min-width:160px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.5)}
+.grade-dropdown:hover .grade-menu,.grade-dropdown.open .grade-menu,.grade-menu:hover{display:block}
+.grade-menu-item{display:flex;align-items:center;gap:8px;padding:8px 16px;cursor:pointer;transition:background .15s;font-size:13px;color:#ccc;white-space:nowrap}
+.grade-menu-item:hover{background:rgba(124,92,252,.15);color:#fff}
+.grade-menu-item .grade-dot{width:8px;height:8px;border-radius:50%;display:inline-block}
+/* Textarea resize handle */
+.resize-handle{position:relative}
+.resize-handle::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:40px;height:6px;cursor:ns-resize;border-radius:3px 3px 0 0;background:rgba(255,255,255,.08);transition:background .2s}
+.resize-handle::after:hover{background:rgba(124,92,252,.4)}
+/* Global scrollbar styling */
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:3px}
+::-webkit-scrollbar-thumb{background:rgba(124,92,252,.3);border-radius:3px}
+::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
+textarea::-webkit-scrollbar{width:6px}
+textarea::-webkit-scrollbar-track{background:rgba(255,255,255,.03);border-radius:3px}
+textarea::-webkit-scrollbar-thumb{background:rgba(124,92,252,.3);border-radius:3px}
+textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
+/* Proxy count badge near textarea */
+.proxy-count-badge{background:rgba(124,92,252,.15);color:#a78bfa;padding:3px 10px;border-radius:12px;font-size:12px;font-weight:600;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="header" style="position:relative">
+<a class="gh-link" href="https://github.com/strongshuai/proxy-checker" target="_blank">&#128187; GitHub</a>
+<h1>&#128269; ChatGPT 代理检测器 v3</h1>
+<p>多维度检测 &middot; CF绕过验证 &middot; 注册就绪检测 &middot; IP类型识别 &middot; Deep Check模式</p>
+</div>
+<div class="container">
+<div id="backendConfig" style="display:none;background:#16162e;border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:16px 20px;margin-bottom:20px">
+<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+<span style="color:#eab308;font-size:13px">&#9888; GitHub Pages 模式 — 请输入你的后端服务器地址</span>
+<input id="backendUrl" type="text" placeholder="http://your-server:port"  style="flex:1;min-width:200px;padding:8px 12px;background:#0d0d1a;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#e0e0e0;font-size:13px">
+<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" onclick="connectBackend()">连接</button>
+<span id="connStatus" style="font-size:12px;color:#666"></span>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>&#128221; 代理列表 <span class="proxy-count-badge" id="proxyCountBadge">0 个代理</span></h2>
+<div style="display:flex;gap:8px;align-items:center">
+<span id="capBadge" class="cap-badge cap-no" style="display:none">&#9888; Deep Check不可用</span>
+<span style="font-size:12px;color:#555">Ctrl+Enter 开始/停止</span>
+</div>
+</div>
+<div class="card-body">
+<div class="resize-handle"><textarea id="proxyInput" placeholder="每行一个代理，支持以下格式:&#10;&#10;无前缀(自动识别协议): ip:port&#10;HTTP: http://ip:port&#10;HTTPS: https://ip:port&#10;SOCKS4: socks4://ip:port&#10;SOCKS5: socks5://ip:port&#10;SOCKS5H: socks5h://ip:port&#10;带认证: user:pass@ip:port"></textarea></div>
+<div id="progress" style="width:100%;height:3px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden;margin-top:12px;display:none">
+<div id="progressBar" style="height:100%;background:linear-gradient(90deg,#7c5cfc,#a855f7);transition:width .3s;width:0%"></div>
+</div>
+<div class="btn-row">
+<button class="btn btn-primary" id="checkBtn" onclick="startCheck()">&#9654; 开始检测</button>
+<button class="btn btn-danger" id="stopBtn" style="display:none" onclick="stopCheck()">&#9632; 停止</button>
+<select id="roundsSelect">
+<option value="1">1轮(快速)</option>
+<option value="2" selected>2轮(推荐)</option>
+<option value="3">3轮(严格)</option>
+</select>
+<button class="btn btn-ghost" onclick="dedup()">&#128260; 去重</button>
+<button class="btn btn-ghost" onclick="clearAll()">清空</button>
+<div class="fetch-dropdown" id="fetchDropdown">
+<button class="btn btn-ghost fetch-btn" id="fetchBtn" onclick="toggleFetchMenu()">&#128229; 拉取免费代理</button>
+<div class="fetch-menu" id="fetchMenu"></div>
+</div>
+<span id="statusText" style="margin-left:auto;font-size:12px;color:#666"></span>
+</div>
+</div>
+</div>
+<div class="stats-row">
+<div class="stat"><div class="stat-num" id="sTotal">0</div><div class="stat-label">总计</div></div>
+<div class="stat"><div class="stat-num" id="sValid" style="color:#22c55e">0</div><div class="stat-label">稳定(2/2)</div></div>
+<div class="stat"><div class="stat-num" id="sUnstable" style="color:#eab308">0</div><div class="stat-label">不稳定(1/2)</div></div>
+<div class="stat"><div class="stat-num" id="sInvalid" style="color:#ef4444">0</div><div class="stat-label">失效</div></div>
+<div class="stat"><div class="stat-num" id="sCfBypass" style="color:#10b981">0</div><div class="stat-label">CF绕过</div></div>
+<div class="stat"><div class="stat-num" id="sRegReady" style="color:#60a5fa">0</div><div class="stat-label">可注册</div></div>
+<div class="stat"><div class="stat-num" id="sRate" style="color:#eab308">0%</div><div class="stat-label">稳定率</div></div>
+<div class="stat"><div class="stat-num" style="font-size:1rem;color:#a78bfa" id="sRounds">2轮</div><div class="stat-label">每代理检测次数</div></div>
+</div>
+<div class="results-grid">
+<div class="card">
+<div class="card-head">
+<h2>&#9989; 有效代理 <span style="background:rgba(124,92,252,.15);color:#a78bfa;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;margin-left:8px" id="vCount">0</span></h2>
+<div style="display:flex;gap:8px;align-items:center">
+<button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" onclick="copyValidProxies()">复制全部</button>
+<div class="grade-dropdown" id="gradeDropdown">
+<button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" onclick="toggleGradeMenu()">添加到我的仓库</button>
+<div class="grade-menu" id="gradeMenu">
+<div class="grade-menu-item" onclick="addToRepoByGrade('A')"><span class="grade-dot" style="background:#22c55e"></span>等级 A — 最优</div>
+<div class="grade-menu-item" onclick="addToRepoByGrade('B')"><span class="grade-dot" style="background:#10b981"></span>等级 B — 良好</div>
+<div class="grade-menu-item" onclick="addToRepoByGrade('C')"><span class="grade-dot" style="background:#eab308"></span>等级 C — 可用</div>
+<div class="grade-menu-item" onclick="addToRepoByGrade('D')"><span class="grade-dot" style="background:#f97316"></span>等级 D — 仅首页</div>
+<div class="grade-menu-item" onclick="addToRepoByGrade('ALL')"><span class="grade-dot" style="background:#7c5cfc"></span>全部有效代理</div>
+</div>
+</div>
+</div>
+</div>
+<div class="card-body">
+<div class="filter-bar" id="vFilters">
+<button class="fbtn active" data-f="all">全部</button>
+<button class="fbtn" data-f="stable">稳定</button>
+<button class="fbtn" data-f="unstable">不稳定</button>
+<button class="fbtn" data-f="cf_bypass">CF绕过</button>
+<button class="fbtn" data-f="reg_ready">可注册</button>
+<button class="fbtn" data-f="fast">&lt;1秒</button>
+<button class="fbtn" data-f="mid">1-3秒</button>
+<button class="fbtn" data-f="slow">&gt;3秒</button>
+</div>
+<div class="result-list" id="validList"><div class="empty">等待检测...</div></div>
+</div>
+</div>
+<div class="card">
+<div class="card-head">
+<h2>&#10060; 失效代理 <span style="background:rgba(124,92,252,.15);color:#a78bfa;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;margin-left:8px" id="fCount">0</span></h2>
+<button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" onclick="copyFailedProxies()">复制全部</button>
+</div>
+<div class="card-body">
+<div class="filter-bar" id="fFilters">
+<button class="fbtn active" data-f="all">全部</button>
+<button class="fbtn" data-f="timeout">超时</button>
+<button class="fbtn" data-f="cf_block">CF拦截</button>
+<button class="fbtn" data-f="conn">连接错误</button>
+<button class="fbtn" data-f="other">其他</button>
+</div>
+<div class="result-list" id="failList"><div class="empty">等待检测...</div></div>
+</div>
+</div>
+</div>
+<!-- 我的仓库 -->
+<div class="card" id="repoCard">
+<div class="card-head">
+<h2>&#128230; 我的仓库 <span style="background:rgba(124,92,252,.15);color:#a78bfa;padding:2px 8px;border-radius:10px;font-size:12px;font-weight:600;margin-left:8px" id="repoCount">0</span></h2>
+<div style="display:flex;gap:8px;align-items:center">
+<button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" onclick="exportRepo()">&#128229; 导出全部</button>
+<button class="btn btn-ghost" style="padding:5px 12px;font-size:11px" onclick="copyRepo()">&#128203; 复制全部</button>
+<button class="btn btn-ghost" style="padding:5px 12px;font-size:11px;color:#22c55e;border-color:rgba(34,197,94,.3)" onclick="recheckRepo()">&#9654; 再次检测</button>
+<button class="btn btn-ghost" style="padding:5px 12px;font-size:11px;color:#ef4444" onclick="clearRepo()">清空仓库</button>
+</div>
+</div>
+<div class="card-body">
+<div class="result-list" id="repoList" style="max-height:300px"><div class="empty">仓库为空，检测完成后可将代理添加到仓库</div></div>
+</div>
+</div>
+</div>
+<div class="toast" id="toast"></div>
+<div class="footer">
+  <a href="https://linux.do" target="_blank">linux.do</a> · by <a href="https://linux.do/u/sq4537/summary" target="_blank">sq4537</a>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
