@@ -2,11 +2,14 @@
 
 Proxy Checker 是一个自托管优先的免费代理检测、筛选、仓库维护工具。你可以把它理解成一个给代理池做体检的小面板：拉取持续更新的公共代理源，批量检测 HTTP、HTTPS、SOCKS4、SOCKS5、SOCKS5H，把真正有用的代理放进“我的仓库”，再生成稳定的 TXT / JSON 链接给脚本、服务或其他工具直接拉取。
 
-如果你经常在 linux.do 折腾代理、跑号服务器、API 连通性，v6.0 这一版就很适合放在自己的机器上跑。它不是那种“我在别的机器上测通了，所以你那里也一定能用”的玄学榜单，而是直接回答一个更实用的问题：**你这台服务器能不能连上这个代理，并且通过它访问目标服务？**
+如果你经常折腾代理、跑号服务器、API 连通性，v6.0 这一版就很适合放在自己的机器上跑。它不是那种“我在别的机器上测通了，所以你那里也一定能用”的玄学榜单，而是直接回答一个更实用的问题：**你这台服务器能不能连上这个代理，并且通过它访问目标服务？**
 
 🚀 项目地址：[strongshuai/proxy-checker](https://github.com/strongshuai/proxy-checker)
+<img width="3828" height="1962" alt="1781471865980_d" src="https://github.com/user-attachments/assets/d805af84-d60e-40bd-b7d6-abb44078332f" />
 <img width="2652" height="1563" alt="image" src="https://github.com/user-attachments/assets/84b9a523-aae2-4a4b-940e-954d52544089" />
 <img width="2661" height="1556" alt="image" src="https://github.com/user-attachments/assets/78573d13-5fab-48e9-a60d-532572e5e381" />
+<img width="1278" height="1815" alt="image" src="https://github.com/user-attachments/assets/44f3712d-77db-4a98-bc6b-2d398685c3e1" /><img width="1419" height="1527" alt="image" src="https://github.com/user-attachments/assets/6656ec66-fe46-45bf-b313-f9d364b66b57" />
+
 
 ## 这东西适合谁
 
