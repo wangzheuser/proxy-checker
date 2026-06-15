@@ -48,6 +48,11 @@ var appSettings={
   timezone_options:[{id:'UTC',name:'UTC'}],
   password_configurable:true
 };
+var deepCheckInfo={
+  available:false,
+  label:'⚠️ Deep Check不可用',
+  title:'Deep Check 是用真实浏览器复测代理的慢速检查；当前服务器没装这套组件，所以这里只能做普通检测。'
+};
 var targetProfiles=[
   {id:'generic',name:'常规代理检测',has_api:false,has_signup:false,has_cf_detection:false},
   {id:'openai',name:'OpenAI 检测',has_api:true,has_signup:false,has_cf_detection:true},
@@ -109,6 +114,17 @@ function copyText(text){
 function toast(m){var t=document.getElementById("toast");t.textContent=m;t.classList.add("show");setTimeout(function(){t.classList.remove("show")},2500)}
 function esc(s){var d=document.createElement("div");d.textContent=s;return d.innerHTML}
 function attr(s){return esc(s).replace(/"/g,'&quot;').replace(/'/g,'&#39;')}
+function applyDeepCheckBadge(badge){
+  if(!badge)return;
+  badge.className=deepCheckInfo.available?'cap-badge cap-ok':'cap-badge cap-no';
+  badge.innerHTML=esc(deepCheckInfo.label);
+  badge.title=deepCheckInfo.title;
+  badge.style.display='inline-flex';
+}
+function deepCheckBadgeHTML(){
+  var cls=deepCheckInfo.available?'cap-badge cap-ok':'cap-badge cap-no';
+  return '<span id="capBadge" class="'+attr(cls)+'" title="'+attr(deepCheckInfo.title)+'">'+esc(deepCheckInfo.label)+'</span>';
+}
 function parseLines(t){return t.split("\n").map(function(l){return l.trim()}).filter(function(l){return l.length>0 && !l.startsWith("#")})}
 function dedup(){
   var lines=parseLines(proxyInput.value);
@@ -195,9 +211,9 @@ function loginWithPassword(){
     if(msg)msg.textContent='请输入密码';
     return;
   }
-  if(btn){btn.disabled=true;btn.textContent='登录中...'}
+  if(btn){btn.disabled=true;btn.textContent='🔐 登录中...'}
   post('/api/auth/login',{password:password},function(err,res){
-    if(btn){btn.disabled=false;btn.textContent='登录'}
+    if(btn){btn.disabled=false;btn.textContent='🔐 登录'}
     if(err||!res||!res.ok){
       if(msg)msg.textContent=err||'登录失败';
       return;
@@ -237,17 +253,21 @@ function checkCapabilities(){
     if(res&&res.settings)applyAppSettings(res.settings);
     updateAutoAvailability(res&&res.auto_mode_hint);
     if(autoModeAvailable&&authenticated)loadAutoStatus();
-    var badge=document.getElementById("capBadge");
     if(res && res.deep_check){
-      badge.className="cap-badge cap-ok";
-      badge.innerHTML="&#9989; Deep Check可用";
-      badge.title="Deep Check 已可用：会用真实浏览器再测一次，速度慢一点，但更接近真实访问目标服务的结果。";
+      deepCheckInfo={
+        available:true,
+        label:'✅ Deep Check可用',
+        title:'Deep Check 已可用：会用真实浏览器再测一次，速度慢一点，但更接近真实访问目标服务的结果。'
+      };
     }else{
-      badge.className="cap-badge cap-no";
-      badge.innerHTML="&#9888; Deep Check不可用";
-      badge.title="Deep Check 是用真实浏览器复测代理的慢速检查；当前服务器没装这套组件，所以这里只能做普通检测。";
+      deepCheckInfo={
+        available:false,
+        label:'⚠️ Deep Check不可用',
+        title:'Deep Check 是用真实浏览器复测代理的慢速检查；当前服务器没装这套组件，所以这里只能做普通检测。'
+      };
     }
-    badge.style.display="inline-flex";
+    var badge=document.getElementById("capBadge");
+    if(badge)applyDeepCheckBadge(badge);
   });
 }
 
@@ -263,7 +283,7 @@ function renderTargetProfileMenu(){
   if(!menu)return;
   var html='';
   targetProfiles.forEach(function(profile){
-    var active=profile.id===currentTargetProfile?' <span style="color:#22c55e;margin-left:auto">✓</span>':'';
+    var active=profile.id===currentTargetProfile?' <span style="color:#22c55e;margin-left:auto">✅</span>':'';
     html+='<div class="fetch-menu-item" onclick="setTargetProfile(\''+esc(profile.id)+'\')">&#127919; '+esc(profile.name)+active+'</div>';
   });
   menu.innerHTML=html;
@@ -275,8 +295,8 @@ function updateTargetProfileUI(){
   if(btn)btn.innerHTML='&#127919; '+esc(profile.name)+' &#9660;';
   var serviceBtn=document.getElementById('filterServiceBtn');
   var apiBtn=document.getElementById('filterApiBtn');
-  if(serviceBtn)serviceBtn.textContent=profile.has_cf_detection?'网页CF未拦截':'服务可达';
-  if(apiBtn)apiBtn.textContent=profile.has_api?'API域名可达':'出口IP';
+  if(serviceBtn)serviceBtn.textContent=profile.has_cf_detection?'🛡️ 网页CF未拦截':'🌐 服务可达';
+  if(apiBtn)apiBtn.textContent=profile.has_api?'🔌 API域名可达':'🌐 出口IP';
   updateStatLabels();
 }
 
@@ -428,7 +448,7 @@ function startCheck(options){
     post('/api/auto/status',{token:getUserToken()},function(err,res){
       if(!err&&res&&res.state&&res.state.running){
         renderAutoStatus(res);
-        toast('自动任务正在执行，请先打开自动模式并停止自动任务');
+        toast('自动任务正在执行，请先打开自动任务并停止');
         return;
       }
       var nextOptions=Object.assign({},options,{skipAutoCheck:true});
@@ -634,7 +654,7 @@ function renderLimitedList(items,listKey,emptyText){
   var visible=items.slice(0,limit);
   var html=visible.map(function(r){return itemHTML(r,resultItemType(r))}).join('');
   if(items.length>visible.length){
-    html+='<div class="list-more"><span>已渲染 '+visible.length+' / '+items.length+' 条，复制/入库仍会处理全部结果</span><button class="btn btn-ghost" onclick="showMoreResults(\''+listKey+'\')">显示更多</button></div>';
+    html+='<div class="list-more"><span>已渲染 '+visible.length+' / '+items.length+' 条，复制/入库仍会处理全部结果</span><button class="btn btn-ghost" onclick="showMoreResults(\''+listKey+'\')">➕ 显示更多</button></div>';
   }
   return html;
 }
@@ -832,7 +852,7 @@ function itemHTML(r,type){
   var badge=r.valid?tagHTML('tag-ok',esc(gradeLabels[g]||''),getFinalBadgeTitle(g,'valid')):
             r.unstable?tagHTML('tag-unstable','不稳定',getFinalBadgeTitle(g,'unstable')):
             tagHTML('tag-fail',esc(gradeLabels[g]||''),getFinalBadgeTitle(g,'invalid'));
-  var repoBtn=type==='invalid'?'':'<button class="copy-btn" onclick="event.stopPropagation();addSingleResultToRepo(this)" data-p="'+esc(r.proxy)+'">添加到仓库</button>';
+  var repoBtn=type==='invalid'?'':'<button class="copy-btn" onclick="event.stopPropagation();addSingleResultToRepo(this)" data-p="'+esc(r.proxy)+'">📦 添加到仓库</button>';
 
   // Detail panel (expandable)
   var detailId='detail_'+Math.random().toString(36).substr(2,8);
@@ -858,7 +878,7 @@ function itemHTML(r,type){
     (r.latency?tagHTML('tag-lat','<span class="speed-dot '+spd+'"></span>'+esc(lat),tagTitle('latency')):'')+
     badge+
     repoBtn+
-    '<button class="copy-btn" onclick="event.stopPropagation();clip(this)" data-p="'+esc(r.proxy)+'">复制</button>'+
+    '<button class="copy-btn" onclick="event.stopPropagation();clip(this)" data-p="'+esc(r.proxy)+'">📋 复制</button>'+
     '</div></div>';
 }
 
@@ -1069,13 +1089,13 @@ function updateAutoAvailability(hint){
   if(autoModeAvailable){
     btn.disabled=false;
     btn.title='后台按计划自动拉取、检测并更新仓库';
-    badge.title='自动模式状态';
+    badge.title='自动任务状态';
   }else{
     btn.disabled=true;
-    btn.title=hint||'当前部署不支持后台自动模式';
+    btn.title=hint||'当前部署不支持后台自动任务';
     badge.className='auto-status-badge error';
     badge.textContent='自动不可用';
-    badge.title=hint||'当前部署不支持后台自动模式';
+    badge.title=hint||'当前部署不支持后台自动任务';
   }
 }
 
@@ -1292,12 +1312,12 @@ function renderAutoProgress(data){
 function openAutoSettings(){
   if(!requireAuthenticatedUI())return;
   if(!autoModeAvailable){
-    toast('当前部署不支持后台自动模式');
+    toast('当前部署不支持后台自动任务');
     return;
   }
   post('/api/auto/get',{token:getUserToken(),since:autoResultsIndex,session_id:autoSessionId},function(err,res){
     if(err||res.error){
-      toast(err||res.error||'读取自动模式失败');
+      toast(err||res.error||'读取自动任务失败');
       return;
     }
     processAutoRealtimeResults(res);
@@ -1314,7 +1334,7 @@ function showAutoModal(data){
   overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
   var html='<div class="modal-box" style="max-width:640px;text-align:left">';
   html+='<div class="modal-icon" style="background:linear-gradient(135deg,rgba(34,197,94,.15),rgba(34,197,94,.05));border-color:rgba(34,197,94,.22)">⏱️</div>';
-  html+='<h3 style="text-align:center">自动模式</h3>';
+  html+='<h3 style="text-align:center">自动任务</h3>';
   html+='<div class="auto-progress" id="autoProgress"></div>';
   html+='<div class="settings-note">启用后台自动检测：保存后服务器会按时间规则自动跑，不需要浏览器一直打开。立即运行：不等下次计划时间，马上跑一轮；是否启用定时由上面的勾选决定。</div>';
   html+='<div class="auto-form">';
@@ -1328,11 +1348,11 @@ function showAutoModal(data){
   html+='<div class="auto-field full"><label>入库策略</label><select id="autoRepoPolicy"><option value="stable_only">只入库稳定可用(A/B/C)，复测失败旧代理会删除</option><option value="include_unstable">包含不稳定(A/B/C/D)，复测失败旧代理会删除</option><option value="archive_all">所有结果都留档，失效代理也保留</option></select></div>';
   html+='<div class="auto-field full"><div class="settings-note">本轮自动检测使用全局设置：'+esc(getRoundsValue())+' 轮，并发 '+esc(getConcurrentValue())+'。要修改请打开“设置”。</div></div>';
   html+='</div>';
-  html+='<div class="auto-inline" style="justify-content:center;margin-top:12px">';
-  html+='<button class="btn btn-primary" onclick="saveAutoSettings()">保存设置</button>';
-  html+='<button class="btn btn-ghost" onclick="runAutoNow()">立即运行</button>';
-  html+='<button class="btn btn-danger" id="autoStopBtn" onclick="stopAutoNow()" '+(state.running?'':'disabled')+'>停止自动任务</button>';
-  html+='<button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">关闭</button>';
+  html+='<div class="auto-action-row">';
+  html+='<button class="btn btn-primary" onclick="saveAutoSettings()">💾 保存设置</button>';
+  html+='<button class="btn btn-ghost" onclick="runAutoNow()">▶️ 立即运行</button>';
+  html+='<button class="btn btn-danger" id="autoStopBtn" onclick="stopAutoNow()" '+(state.running?'':'disabled')+'>⏹️ 停止任务</button>';
+  html+='<button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">✖️ 关闭</button>';
   html+='</div></div>';
   overlay.innerHTML=html;
   document.body.appendChild(overlay);
@@ -1371,7 +1391,7 @@ function saveAutoSettings(){
   post('/api/auto/save',{token:getUserToken(),config:config},function(err,res){
     if(err||res.error){toast('保存失败: '+(err||res.error));return}
     renderAutoStatus(res);
-    toast('自动模式设置已保存');
+    toast('自动任务设置已保存');
   });
 }
 
@@ -1434,6 +1454,7 @@ function showSettingsModal(settings){
   html+='<div class="modal-icon" style="background:linear-gradient(135deg,rgba(124,92,252,.16),rgba(124,92,252,.05));border-color:rgba(124,92,252,.22)">⚙️</div>';
   html+='<h3 style="text-align:center">设置</h3>';
   html+='<div class="settings-note">这里保存的是服务运行参数。轮次默认最多 3 轮，轮次越高越慢；并发越高越快，但服务器和代理源压力也越大。</div>';
+  html+='<div class="settings-note" style="display:flex;align-items:center;justify-content:space-between;gap:12px"><span>Deep Check 状态</span>'+deepCheckBadgeHTML()+'</div>';
   html+='<div class="auto-form">';
   html+='<div class="auto-field"><label>检测轮次</label><select id="settingsRounds">'+settingsRoundsOptions(settings.check_rounds)+'</select></div>';
   html+='<div class="auto-field"><label>默认并发</label><input id="settingsConcurrent" type="number" min="1" max="'+esc(settings.max_concurrent_limit||200)+'" step="1" value="'+esc(settings.max_concurrent||30)+'"></div>';
@@ -1447,8 +1468,8 @@ function showSettingsModal(settings){
   html+='<div class="auto-field full"><label>确认新密码</label><input id="settingsPasswordConfirm" type="password" autocomplete="new-password" placeholder="再次输入新密码" '+(settings.password_configurable?'':'disabled')+'></div>';
   html+='</div>';
   html+='<div class="auto-inline" style="justify-content:center;margin-top:12px">';
-  html+='<button class="btn btn-primary" onclick="saveAppSettings()">保存设置</button>';
-  html+='<button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">关闭</button>';
+  html+='<button class="btn btn-primary" onclick="saveAppSettings()">💾 保存设置</button>';
+  html+='<button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">✖️ 关闭</button>';
   html+='</div></div>';
   overlay.innerHTML=html;
   document.body.appendChild(overlay);
@@ -1512,7 +1533,7 @@ function showRunLogsModal(logs){
   overlay.onclick=function(e){if(e.target===overlay)overlay.remove()};
   var html='<div class="modal-box" style="max-width:820px;text-align:left">';
   html+='<div class="modal-icon" style="background:linear-gradient(135deg,rgba(96,165,250,.16),rgba(96,165,250,.05));border-color:rgba(96,165,250,.22)">📋</div>';
-  html+='<h3 style="text-align:center">检测日志</h3>';
+  html+='<h3 style="text-align:center">📋 日志</h3>';
   html+='<div class="settings-note">记录手动检测和自动任务的开始时间、结束时间、模式、轮次、并发、数量和结果摘要。</div>';
   html+='<div class="log-list" id="runLogList">';
   if(!logs.length){
@@ -1542,9 +1563,9 @@ function showRunLogsModal(logs){
   }
   html+='</div>';
   html+='<div class="auto-inline" style="justify-content:center;margin-top:12px">';
-  html+='<button class="btn btn-danger" onclick="clearRunLogs()">清空日志</button>';
-  html+='<button class="btn btn-ghost" onclick="openRunLogs();this.closest(\'.modal-overlay\').remove()">刷新</button>';
-  html+='<button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">关闭</button>';
+  html+='<button class="btn btn-danger" onclick="clearRunLogs()">&#128465; 清空日志</button>';
+  html+='<button class="btn btn-ghost" onclick="openRunLogs();this.closest(\'.modal-overlay\').remove()">🔄 刷新</button>';
+  html+='<button class="btn btn-ghost" onclick="this.closest(\'.modal-overlay\').remove()">✖️ 关闭</button>';
   html+='</div></div>';
   overlay.innerHTML=html;
   document.body.appendChild(overlay);
@@ -1908,12 +1929,12 @@ function renderRepo(){
       '<div style="display:flex;align-items:center;gap:8px;flex-shrink:0">'+
       (p.latency?tagHTML('tag-lat','<span class="speed-dot '+spd+'"></span>'+esc(lat),tagTitle('latency')):'')+
       tagHTML('tag-ok',esc(gradeLabels[g]||''),getFinalBadgeTitle(g,g==='D'?'unstable':g==='F'?'invalid':'valid'))+
-      '<button class="copy-btn" style="opacity:0.6" onclick="event.stopPropagation();clip(this)" data-p="'+esc(p.proxy)+'">复制</button>'+
-      '<button class="copy-btn" style="opacity:0.6;color:#ef4444" onclick="event.stopPropagation();removeFromRepo('+i+')">删除</button>'+
+      '<button class="copy-btn" style="opacity:0.6" onclick="event.stopPropagation();clip(this)" data-p="'+esc(p.proxy)+'">📋 复制</button>'+
+      '<button class="copy-btn" style="opacity:0.6;color:#ef4444" onclick="event.stopPropagation();removeFromRepo('+i+')">🗑 删除</button>'+
       '</div></div>';
   });
   if(displayRepo.length>visibleRepo.length){
-    html+='<div class="list-more"><span>已渲染 '+visibleRepo.length+' / '+displayRepo.length+' 条，复制/导出仍会处理全部仓库</span><button class="btn btn-ghost" onclick="showMoreResults(\'repo\')">显示更多</button></div>';
+    html+='<div class="list-more"><span>已渲染 '+visibleRepo.length+' / '+displayRepo.length+' 条，复制/导出仍会处理全部仓库</span><button class="btn btn-ghost" onclick="showMoreResults(\'repo\')">➕ 显示更多</button></div>';
   }
   list.innerHTML=html;
   list.style.maxHeight='420px';
@@ -2071,7 +2092,7 @@ function getRepoLink(button){
   }
   post('/api/repo/save',{repo:repo,token:token},function(err,res){
     if(btn){
-      btn.innerHTML='&#128279; 获取仓库链接';
+      btn.innerHTML='&#128279; 仓库链接';
       btn.disabled=false;
     }
     if(err||res.error){toast('同步失败: '+(err||res.error));return}
@@ -2087,8 +2108,8 @@ function getRepoLink(button){
     html+='<p style="margin-bottom:16px">在其他程序的代理框中粘贴此链接即可拉取：</p>';
     html+='<input id="repoLinkInput" readonly value="'+url+'" style="width:100%;padding:12px 14px;background:#0d0d1a;border:1px solid rgba(255,255,255,.1);border-radius:10px;color:#e0e0e0;font-family:monospace;font-size:12px;margin-bottom:20px">';
     html+='<div style="display:flex;gap:10px;justify-content:center">';
-    html+='<button class="btn btn-ghost" onclick="navigator.clipboard.writeText(document.getElementById(\'repoLinkInput\').value);toast(\'已复制\')">复制链接</button>';
-    html+='<button class="btn btn-primary" onclick="this.closest(\'.modal-overlay\').remove()">关闭</button>';
+    html+='<button class="btn btn-ghost" onclick="navigator.clipboard.writeText(document.getElementById(\'repoLinkInput\').value);toast(\'已复制\')">📋 复制链接</button>';
+    html+='<button class="btn btn-primary" onclick="this.closest(\'.modal-overlay\').remove()">✖️ 关闭</button>';
     html+='</div></div>';
     overlay.innerHTML=html;
     document.body.appendChild(overlay);

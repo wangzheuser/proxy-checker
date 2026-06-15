@@ -300,9 +300,9 @@ def api_capabilities():
     try:
         from fetch_proxies import PROXY_SOURCES
         sources = [{"id": s["id"], "name": s["name"]} for s in PROXY_SOURCES]
-        return jsonify({"nodriver": False, "xvfb": False, "deep_check": False, "fetch_proxies": True, "target_profiles": list(TARGET_PROFILE_OPTIONS), "max_concurrent": MAX_CONCURRENT, "max_concurrent_limit": MAX_CONCURRENT_LIMIT, "auth_required": is_auth_enabled(), "authenticated": is_request_authenticated(), "auto_mode": False, "auto_mode_hint": "Vercel / Serverless 不支持后台自动模式，请使用自托管 Python 服务", "settings": public_settings_payload(), "proxy_sources": sources, "hosted": "vercel"})
+        return jsonify({"nodriver": False, "xvfb": False, "deep_check": False, "fetch_proxies": True, "target_profiles": list(TARGET_PROFILE_OPTIONS), "max_concurrent": MAX_CONCURRENT, "max_concurrent_limit": MAX_CONCURRENT_LIMIT, "auth_required": is_auth_enabled(), "authenticated": is_request_authenticated(), "auto_mode": False, "auto_mode_hint": "Vercel / Serverless 不支持后台自动任务，请使用自托管 Python 服务", "settings": public_settings_payload(), "proxy_sources": sources, "hosted": "vercel"})
     except ImportError:
-        return jsonify({"nodriver": False, "xvfb": False, "deep_check": False, "fetch_proxies": False, "target_profiles": list(TARGET_PROFILE_OPTIONS), "max_concurrent": MAX_CONCURRENT, "max_concurrent_limit": MAX_CONCURRENT_LIMIT, "auth_required": is_auth_enabled(), "authenticated": is_request_authenticated(), "auto_mode": False, "auto_mode_hint": "Vercel / Serverless 不支持后台自动模式，请使用自托管 Python 服务", "settings": public_settings_payload(), "proxy_sources": [], "hosted": "vercel"})
+        return jsonify({"nodriver": False, "xvfb": False, "deep_check": False, "fetch_proxies": False, "target_profiles": list(TARGET_PROFILE_OPTIONS), "max_concurrent": MAX_CONCURRENT, "max_concurrent_limit": MAX_CONCURRENT_LIMIT, "auth_required": is_auth_enabled(), "authenticated": is_request_authenticated(), "auto_mode": False, "auto_mode_hint": "Vercel / Serverless 不支持后台自动任务，请使用自托管 Python 服务", "settings": public_settings_payload(), "proxy_sources": [], "hosted": "vercel"})
 
 @app.route('/api/settings/get', methods=['POST'])
 def api_settings_get():
@@ -338,7 +338,7 @@ def api_auto_unsupported():
         return unauthorized_response()
     return jsonify({
         "auto_mode": False,
-        "error": "Vercel / Serverless 不支持后台自动模式，请使用自托管 Python 服务",
+        "error": "Vercel / Serverless 不支持后台自动任务，请使用自托管 Python 服务",
         "server_time": {"timestamp": int(time.time()), "text": time.strftime("%Y-%m-%d %H:%M:%S")},
     })
 

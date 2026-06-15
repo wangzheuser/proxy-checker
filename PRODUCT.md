@@ -10,7 +10,7 @@ Users batch-check free proxy lists for general HTTPS access and AI service reach
 
 ## Product Purpose
 
-Proxy Checker v6.0 is a self-hosted-first free proxy checker, repository maintainer, and scheduled automation tool. It pulls from continuously updated public proxy sources, deduplicates large batches, checks HTTP, HTTPS, SOCKS4, SOCKS5, and SOCKS5H proxies, and helps users save, filter, re-check, export, sync, schedule, and share usable proxies through stable TXT / JSON repository links.
+Proxy Checker v6.1 is a self-hosted-first free proxy checker, repository maintainer, and scheduled automation tool. It pulls from continuously updated public proxy sources, deduplicates large batches, checks HTTP, HTTPS, SOCKS4, SOCKS5, and SOCKS5H proxies, and helps users save, filter, re-check, export, sync, schedule, and share usable proxies through stable TXT / JSON repository links.
 
 The product supports five target profiles: generic HTTPS proxy checking, OpenAI, Grok, Gemini, and Claude. Results should explain practical network usefulness: base reachability, service homepage reachability, API-domain reachability, Cloudflare status where relevant, exit IP, country, IP type, grade, and recommended use.
 
@@ -49,4 +49,6 @@ Prefer complete, low-friction workflows that do not require manual stitching. Ke
 
 ## Release Context
 
-v6.0 is the public GitHub release line. It includes the full general-purpose proxy checker upgrade: target profiles for generic/OpenAI/Grok/Gemini/Claude, registration-page detection removal, practical usefulness labels, exit IP/country/IP-type reporting, dynamic proxy source aggregation at 1W+ scale, repository filtering and cloud sync, refresh-safe detection, visible row actions, password-gated same-origin app shell, global settings, run logs, timezone-aware backend auto mode, automatic repository maintenance, serverless degradation messaging, smoke coverage, and release documentation.
+v6.1 is the current public GitHub release line. It keeps the v6.0 general-purpose proxy checker foundation: target profiles for generic/OpenAI/Grok/Gemini/Claude, registration-page detection removal, practical usefulness labels, exit IP/country/IP-type reporting, dynamic proxy source aggregation at 1W+ scale, repository filtering and cloud sync, refresh-safe detection, visible row actions, password-gated same-origin app shell, global settings, run logs, timezone-aware backend auto tasks, automatic repository maintenance, serverless degradation messaging, smoke coverage, and release documentation.
+
+v6.1 focuses on release polish for real large-batch use: result lists render in batches instead of pushing every proxy into the DOM at once, saved detection results are debounced, filters re-render from data instead of walking huge DOM lists, Cloudflare wording is more honest, settings rounds sync back into the main detection controls, the concurrent setting remains wired through to both the frontend request and backend semaphore/client limits, auto mode wording is standardized as auto tasks, modal actions are more compact, the header/stat layout is tighter, Deep Check status moves into settings, repository action labels are shorter, and visible buttons use emoji labels for faster scanning.

@@ -1211,7 +1211,7 @@ def start_auto_run(token, reason="schedule"):
         record = load_auto_record(token)
         config = normalize_auto_config(record.get("config", {}))
         if reason == "schedule" and not config.get("enabled"):
-            return False, "自动模式未启用"
+            return False, "自动任务未启用"
         run_id = f"auto_{int(time.time())}_{id(config)}"
         started_at = time.time()
         log_id = start_run_log(token, {
@@ -1659,7 +1659,7 @@ class Handler(SimpleHTTPRequestHandler):
                     "auth_required": is_auth_enabled(),
                     "authenticated": is_request_authenticated(self.headers),
                     "auto_mode": True,
-                    "auto_mode_hint": "后台自动模式仅在自托管 Python 服务中可用",
+                    "auto_mode_hint": "后台自动任务仅在自托管 Python 服务中可用",
                     "settings": public_settings_payload(),
                     "proxy_sources": [{"id": s["id"], "name": s["name"]} for s in (PROXY_SOURCES if FETCH_PROXIES_AVAILABLE else [])],
                 })

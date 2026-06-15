@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>通用代理检测器 v6.0</title>
+<title>通用代理检测器 v6.1</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#0f0f23;color:#e0e0e0;min-height:100vh}
-.header{background:linear-gradient(135deg,#1a1a3e 0%,#2d1b69 100%);padding:16px 32px;border-bottom:1px solid rgba(255,255,255,.08)}
+.header{padding:16px 32px;text-align:center;margin-bottom:-15px}
+.header-title{display:inline-block}
 .header h1{font-size:1.4rem;color:#fff;margin-bottom:2px}
 .header p{font-size:.8rem;color:#8888aa}
 .container{max-width:1440px;margin:0 auto;padding:20px 24px}
@@ -34,10 +35,13 @@ textarea::placeholder{color:#555}
 #concurrentInput{width:76px}
 #roundsSelect:focus,#concurrentInput:focus{outline:none;border-color:#7c5cfc}
 .inline-config{display:inline-flex;align-items:center;gap:6px;height:36px;color:#888;font-size:12px;font-weight:600}
-.stats-row{display:flex;gap:6px;align-items:stretch;flex-wrap:nowrap}
-.stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 16px;text-align:center;min-width:72px}
+.stats-panel{margin:-8px 0 12px}
+.stats-row{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:8px;align-items:stretch;width:100%}
+.stat{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:10px;padding:10px 16px;text-align:center;min-width:0}
 .stat-num{font-size:1.3rem;font-weight:800;color:#fff}
 .stat-label{font-size:.7rem;color:#999;margin-top:3px}
+.status-inline{display:inline-flex;align-items:center;color:#777;font-size:12px;white-space:nowrap}
+.card-status{max-width:520px;min-height:18px;overflow:hidden;text-overflow:ellipsis;text-align:right}
 .filter-bar{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
 .fbtn{padding:4px 10px;border:1px solid rgba(255,255,255,.1);border-radius:20px;background:transparent;color:#888;font-size:11px;cursor:pointer;transition:all .2s}
 .fbtn.active{border-color:#7c5cfc;color:#7c5cfc;background:rgba(124,92,252,.1)}
@@ -105,6 +109,8 @@ textarea::placeholder{color:#555}
 #fetchMenu .fetch-menu-item:first-child{grid-column:1/-1;font-weight:700;color:#fff;background:rgba(124,92,252,.12)}
 @media (max-width:900px){#fetchMenu{width:min(520px,calc(100vw - 24px));grid-template-columns:repeat(2,minmax(160px,1fr))}}
 @media (max-width:560px){#fetchMenu{left:0;width:calc(100vw - 32px);grid-template-columns:1fr}}
+@media (max-width:980px){.stats-row{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media (max-width:560px){.stats-row{grid-template-columns:repeat(2,minmax(0,1fr))}}
 .grade-dropdown{position:relative;display:inline-flex}
 .grade-dropdown::after{content:'';position:absolute;top:100%;left:0;width:100%;height:4px}
 .grade-menu{display:none;position:absolute;top:100%;left:0;margin-top:2px;background:#1a1a3e;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px 0;min-width:160px;z-index:50;box-shadow:0 8px 32px rgba(0,0,0,.5)}
@@ -160,6 +166,8 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 .auto-field input:focus,.auto-field select:focus{outline:none;border-color:#7c5cfc}
 .auto-field.full{grid-column:1/-1}
 .auto-inline{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.auto-action-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:12px}
+.auto-action-row .btn{width:100%;padding-left:10px;padding-right:10px;white-space:nowrap}
 .auto-progress{margin:10px 0 4px;padding:10px 12px;border:1px solid rgba(255,255,255,.08);border-radius:8px;background:rgba(0,0,0,.18);font-size:12px;color:#aaa;line-height:1.7;text-align:left}
 .auto-history{max-height:120px;overflow:auto;margin-top:8px;border-top:1px solid rgba(255,255,255,.08);padding-top:8px;font-size:11px;color:#777;text-align:left}
 .settings-note{padding:10px 12px;border-radius:8px;background:rgba(96,165,250,.08);border:1px solid rgba(96,165,250,.16);color:#9ca3af;font-size:12px;line-height:1.7;text-align:left}
@@ -189,27 +197,15 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <p>请输入访问密码后继续操作。</p>
 <input class="auth-input" id="authPassword" type="password" autocomplete="current-password" placeholder="访问密码" onkeydown="if(event.key==='Enter')loginWithPassword()">
 <div class="auth-message" id="authMessage"></div>
-<button class="btn btn-primary" id="authLoginBtn" onclick="loginWithPassword()">登录</button>
+<button class="btn btn-primary" id="authLoginBtn" onclick="loginWithPassword()">🔐 登录</button>
 </div>
 </div>
 
-<!-- Header with stats -->
+<!-- Header -->
 <div class="header">
-<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
-<div>
-<h1>&#128269; 通用代理检测器 v6.0</h1>
+<div class="header-title">
+<h1>&#128269; 通用代理检测器 v6.1</h1>
 <p>常规连通性 &middot; AI 服务专项检测 &middot; IP类型识别 &middot; 仓库同步</p>
-</div>
-<div class="stats-row">
-<div class="stat"><div class="stat-num" id="sTotal">0</div><div class="stat-label">总计</div></div>
-<div class="stat"><div class="stat-num" id="sValid" style="color:#22c55e">0</div><div class="stat-label">稳定(2/2)</div></div>
-<div class="stat"><div class="stat-num" id="sUnstable" style="color:#eab308">0</div><div class="stat-label">不稳定(1/2)</div></div>
-<div class="stat"><div class="stat-num" id="sInvalid" style="color:#ef4444">0</div><div class="stat-label">失效</div></div>
-<div class="stat"><div class="stat-num" id="sCfBypass" style="color:#10b981">0</div><div class="stat-label">服务可达</div></div>
-<div class="stat"><div class="stat-num" id="sApiReachable" style="color:#60a5fa">0</div><div class="stat-label">API域名</div></div>
-<div class="stat"><div class="stat-num" id="sRate" style="color:#eab308">0%</div><div class="stat-label">稳定率</div></div>
-<div class="stat"><div class="stat-num" id="sRounds">2轮</div><div class="stat-label">检测轮数</div></div>
-</div>
 </div>
 </div>
 
@@ -220,7 +216,7 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
 <span style="color:#eab308;font-size:13px">&#9888; GitHub Pages 模式 — 请输入你的后端服务器地址</span>
 <input id="backendUrl" type="text" placeholder="http://your-server:port" style="flex:1;min-width:200px;padding:8px 12px;background:#0d0d1a;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#e0e0e0;font-size:13px">
-<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" onclick="connectBackend()">连接</button>
+<button class="btn btn-primary" style="padding:8px 16px;font-size:12px" onclick="connectBackend()">🔌 连接</button>
 <span id="connStatus" style="font-size:12px;color:#666"></span>
 </div>
 </div>
@@ -230,8 +226,7 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="card-head">
 <h2>&#128221; 代理列表 <span class="proxy-count-badge" id="proxyCountBadge">0 个代理</span></h2>
 <div style="display:flex;gap:8px;align-items:center">
-<span id="capBadge" class="cap-badge cap-no" style="display:none" title="Deep Check 是用真实浏览器复测代理的慢速检查；当前服务器没装这套组件，所以这里只能做普通检测。">&#9888; Deep Check不可用</span>
-<span style="font-size:12px;color:#555">Ctrl+Enter 开始/停止</span>
+<span id="statusText" class="status-inline card-status"></span>
 </div>
 </div>
 <div class="card-body">
@@ -248,7 +243,7 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="detect-menu-item" onclick="setDetectMode('force')"><span class="detect-icon">&#128260;</span> 强制检测全部</div>
 </div>
 </div>
-<button class="btn btn-danger" id="stopBtn" style="display:none" onclick="stopCheck()">&#9632; 停止</button>
+<button class="btn btn-danger" id="stopBtn" style="display:none" onclick="stopCheck()">⏹️ 停止</button>
 <button class="clear-checked-btn" id="clearCheckedBtn" onclick="clearCheckedHistory()" title="清空检测记录">&#128465; 清空检测记录</button>
 <select id="roundsSelect" style="display:none">
 <option value="1">1轮(快速)</option>
@@ -257,7 +252,7 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 </select>
 <input id="concurrentInput" type="hidden" min="1" max="200" step="1" value="30">
 <button class="btn btn-ghost" onclick="dedup()">&#128260; 去重</button>
-<button class="btn btn-ghost" onclick="clearAll()">清空</button>
+<button class="btn btn-ghost" onclick="clearAll()">&#129529; 清空</button>
 <div class="fetch-dropdown" id="fetchDropdown">
 <button class="btn btn-ghost fetch-btn" id="fetchBtn" onclick="toggleFetchMenu()">&#128229; 拉取免费代理</button>
 <div class="fetch-menu" id="fetchMenu"></div>
@@ -267,11 +262,23 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="fetch-menu" id="targetProfileMenu"></div>
 </div>
 <button class="btn btn-ghost" onclick="openAppSettings()" title="检测轮次、并发、密码、超时和时区">&#9881;&#65039; 设置</button>
-<button class="btn btn-ghost" onclick="openRunLogs()" title="查看手动检测和自动任务的执行记录">&#128203; 检测日志</button>
-<button class="btn btn-ghost" id="autoModeBtn" onclick="openAutoSettings()" title="后台按计划自动拉取、检测并更新仓库">⏱️ 自动模式</button>
-<span class="auto-status-badge" id="autoStatusBadge" title="自动模式状态">自动未开启</span>
-<span id="statusText" style="margin-left:auto;font-size:12px;color:#666"></span>
+<button class="btn btn-ghost" onclick="openRunLogs()" title="查看手动检测和自动任务的执行记录">&#128203; 日志</button>
+<button class="btn btn-ghost" id="autoModeBtn" onclick="openAutoSettings()" title="后台按计划自动拉取、检测并更新仓库">⏱️ 自动任务</button>
+<span class="auto-status-badge" id="autoStatusBadge" title="自动任务状态">自动未开启</span>
 </div>
+</div>
+</div>
+
+<div class="stats-panel">
+<div class="stats-row">
+<div class="stat"><div class="stat-num" id="sTotal">0</div><div class="stat-label">总计</div></div>
+<div class="stat"><div class="stat-num" id="sValid" style="color:#22c55e">0</div><div class="stat-label">稳定(2/2)</div></div>
+<div class="stat"><div class="stat-num" id="sUnstable" style="color:#eab308">0</div><div class="stat-label">不稳定(1/2)</div></div>
+<div class="stat"><div class="stat-num" id="sInvalid" style="color:#ef4444">0</div><div class="stat-label">失效</div></div>
+<div class="stat"><div class="stat-num" id="sCfBypass" style="color:#10b981">0</div><div class="stat-label">服务可达</div></div>
+<div class="stat"><div class="stat-num" id="sApiReachable" style="color:#60a5fa">0</div><div class="stat-label">API域名</div></div>
+<div class="stat"><div class="stat-num" id="sRate" style="color:#eab308">0%</div><div class="stat-label">稳定率</div></div>
+<div class="stat"><div class="stat-num" id="sRounds">2轮</div><div class="stat-label">检测轮数</div></div>
 </div>
 </div>
 
@@ -291,20 +298,20 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="tab-panel active" id="tabValid">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
 <div class="filter-bar" id="vFilters" style="margin-bottom:0">
-<button class="fbtn active" data-f="all">全部</button>
-<button class="fbtn" data-f="stable">稳定</button>
-<button class="fbtn" data-f="unstable">不稳定</button>
-<button class="fbtn" id="filterServiceBtn" data-f="cf_bypass">服务可达</button>
-<button class="fbtn" id="filterApiBtn" data-f="api_or_ip">出口IP</button>
-<button class="fbtn" data-f="fast">&lt;1秒</button>
-<button class="fbtn" data-f="mid">1-3秒</button>
-<button class="fbtn" data-f="slow">&gt;3秒</button>
+<button class="fbtn active" data-f="all">🔎 全部</button>
+<button class="fbtn" data-f="stable">✅ 稳定</button>
+<button class="fbtn" data-f="unstable">⚠️ 不稳定</button>
+<button class="fbtn" id="filterServiceBtn" data-f="cf_bypass">🌐 服务可达</button>
+<button class="fbtn" id="filterApiBtn" data-f="api_or_ip">🔌 出口IP</button>
+<button class="fbtn" data-f="fast">⚡ &lt;1秒</button>
+<button class="fbtn" data-f="mid">⏱️ 1-3秒</button>
+<button class="fbtn" data-f="slow">⏳ &gt;3秒</button>
 </div>
 <div style="display:flex;gap:6px;align-items:center">
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="clearValid()">清空</button>
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="copyValidProxies()">复制全部</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="clearValid()">&#129529; 清空</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="copyValidProxies()">📋 复制全部</button>
 <div class="grade-dropdown" id="gradeDropdown">
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="toggleGradeMenu()">添加到我的仓库</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="toggleGradeMenu()">📦 添加到我的仓库</button>
 <div class="grade-menu" id="gradeMenu">
 <div class="grade-menu-item" onclick="addToRepoByGrade('A')"><span class="grade-dot" style="background:#22c55e"></span>等级 A — 最优</div>
 <div class="grade-menu-item" onclick="addToRepoByGrade('B')"><span class="grade-dot" style="background:#10b981"></span>等级 B — 目标可用</div>
@@ -322,15 +329,15 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="tab-panel" id="tabInvalid">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;flex-wrap:wrap;gap:6px">
 <div class="filter-bar" id="fFilters" style="margin-bottom:0">
-<button class="fbtn active" data-f="all">全部</button>
-<button class="fbtn" data-f="timeout">超时</button>
-<button class="fbtn" data-f="cf_block">网页CF拦截</button>
-<button class="fbtn" data-f="conn">连接错误</button>
-<button class="fbtn" data-f="other">其他</button>
+<button class="fbtn active" data-f="all">🔎 全部</button>
+<button class="fbtn" data-f="timeout">⏱️ 超时</button>
+<button class="fbtn" data-f="cf_block">🛡️ 网页CF拦截</button>
+<button class="fbtn" data-f="conn">🔌 连接错误</button>
+<button class="fbtn" data-f="other">❔ 其他</button>
 </div>
 <div style="display:flex;gap:6px;align-items:center">
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="clearFailed()">清空</button>
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="copyFailedProxies()">复制全部</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="clearFailed()">&#129529; 清空</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="copyFailedProxies()">📋 复制全部</button>
 </div>
 </div>
 <div class="result-list" id="failList"><div class="empty">等待检测...</div></div>
@@ -340,20 +347,20 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="tab-panel" id="tabRepo">
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:6px;flex-wrap:wrap">
 <div class="filter-bar" id="repoFilters" style="margin-bottom:0">
-<button class="fbtn active" data-f="all">全部</button>
-<button class="fbtn" data-f="grade_a">等级A</button>
-<button class="fbtn" data-f="grade_b">等级B</button>
-<button class="fbtn" data-f="grade_c">等级C</button>
-<button class="fbtn" data-f="grade_d">等级D</button>
-<button class="fbtn" data-f="service">服务可达</button>
-<button class="fbtn" data-f="api">API域名可达</button>
-<button class="fbtn" data-f="cf">网页CF未拦截</button>
-<button class="fbtn" data-f="dc">机房</button>
-<button class="fbtn" data-f="res">住宅</button>
-<button class="fbtn" data-f="country">有国家</button>
+<button class="fbtn active" data-f="all">🔎 全部</button>
+<button class="fbtn" data-f="grade_a">🏅 等级A</button>
+<button class="fbtn" data-f="grade_b">🏅 等级B</button>
+<button class="fbtn" data-f="grade_c">🏅 等级C</button>
+<button class="fbtn" data-f="grade_d">🏅 等级D</button>
+<button class="fbtn" data-f="service">🌐 服务可达</button>
+<button class="fbtn" data-f="api">🔌 API域名可达</button>
+<button class="fbtn" data-f="cf">🛡️ 网页CF未拦截</button>
+<button class="fbtn" data-f="dc">🏢 机房</button>
+<button class="fbtn" data-f="res">🏠 住宅</button>
+<button class="fbtn" data-f="country">🌍 有国家</button>
 </div>
 <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="clearRepo()">&#128465; 清空仓库</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#ef4444;border-color:rgba(239,68,68,.3)" onclick="clearRepo()">&#128465; 清空</button>
 <div class="fetch-dropdown" id="repoIODropdown">
 <button class="btn btn-ghost" style="padding:4px 10px;font-size:11px" onclick="toggleRepoIO()">&#128228; 导入/导出 &#9660;</button>
 <div class="fetch-menu" id="repoIOMenu">
@@ -370,8 +377,8 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="fetch-menu-item" onclick="saveRepoToCloud()">&#128190; 保存到云端</div>
 </div>
 </div>
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#60a5fa;border-color:rgba(96,165,250,.3)" onclick="getRepoLink(this)">&#128279; 获取仓库链接</button>
-<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#22c55e;border-color:rgba(34,197,94,.3)" onclick="recheckRepo()">&#9654; 再次检测</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#60a5fa;border-color:rgba(96,165,250,.3)" onclick="getRepoLink(this)">&#128279; 仓库链接</button>
+<button class="btn btn-ghost" style="padding:4px 10px;font-size:11px;color:#22c55e;border-color:rgba(34,197,94,.3)" onclick="recheckRepo()">▶️ 再次检测</button>
 </div>
 </div>
 <div class="result-list" id="repoList" style="max-height:420px"><div class="empty">仓库为空，检测完成后可将代理添加到仓库</div></div>
@@ -386,7 +393,7 @@ textarea::-webkit-scrollbar-thumb:hover{background:rgba(124,92,252,.5)}
 <div class="footer">
   <a href="https://github.com/strongshuai/proxy-checker" target="_blank">&#128187; GitHub</a> · <a href="https://linux.do" target="_blank">linux.do</a> · by <a href="https://linux.do/u/sq4537/summary" target="_blank">sq4537</a>
 </div>
-<div class="modal-overlay" id="vercelModal"><div class="modal-box"><div class="modal-icon">&#9888;&#65039;</div><h3>Vercel 体验版提示</h3><p>Vercel 仅推荐用于测试体验，受限于 Serverless 架构，速度很慢，检测准确性也很低。<br><br>建议部署到自己的服务器以获得更快的检测速度和更准确的测试结果。</p><button class="btn btn-primary" onclick="document.getElementById('vercelModal').classList.remove('show')">我知道了</button></div></div>
+<div class="modal-overlay" id="vercelModal"><div class="modal-box"><div class="modal-icon">&#9888;&#65039;</div><h3>Vercel 体验版提示</h3><p>Vercel 仅推荐用于测试体验，受限于 Serverless 架构，速度很慢，检测准确性也很低。<br><br>建议部署到自己的服务器以获得更快的检测速度和更准确的测试结果。</p><button class="btn btn-primary" onclick="document.getElementById('vercelModal').classList.remove('show')">✅ 我知道了</button></div></div>
 <script>if(window.location.hostname.endsWith('vercel.app'))document.getElementById('vercelModal').classList.add('show')</script>
 <script src="app.js"></script>
 </body>
