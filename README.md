@@ -5,7 +5,8 @@ Proxy Checker 是一个自托管优先的免费代理检测、筛选、仓库维
 如果你经常折腾代理、跑号服务器、API 连通性，v6.1 这一版就很适合放在自己的机器上跑。它不是那种“我在别的机器上测通了，所以你那里也一定能用”的玄学榜单，而是直接回答一个更实用的问题：**你这台服务器能不能连上这个代理，并且通过它访问目标服务？**
 
 🚀 项目地址：[strongshuai/proxy-checker](https://github.com/strongshuai/proxy-checker)
-<img width="2394" height="1845" alt="1781489538479_d" src="https://github.com/user-attachments/assets/1c77c83b-32ec-49d6-9b3c-5fe3d24d2808" />
+
+<img width="2342" height="1680" alt="image" src="https://github.com/user-attachments/assets/523ceb1f-9041-4060-a0d1-a5c94d0d8c23" />
 <img width="2652" height="1563" alt="image" src="https://github.com/user-attachments/assets/84b9a523-aae2-4a4b-940e-954d52544089" />
 <img width="2661" height="1556" alt="image" src="https://github.com/user-attachments/assets/78573d13-5fab-48e9-a60d-532572e5e381" />
 <img width="1278" height="1815" alt="image" src="https://github.com/user-attachments/assets/44f3712d-77db-4a98-bc6b-2d398685c3e1" /><img width="1419" height="1527" alt="image" src="https://github.com/user-attachments/assets/6656ec66-fe46-45bf-b313-f9d364b66b57" />
