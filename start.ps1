@@ -57,6 +57,7 @@ try {
     Write-Host "安装/更新 Python 依赖..."
     & $VenvPython -m pip install --upgrade pip
     & $VenvPython -m pip install -r (Join-Path $RootDir "requirements.txt")
+    & $VenvPython -m playwright install chromium
 
     Write-Host "启动 Proxy Checker 服务..."
     $ServerProcess = Start-Process `

@@ -24,12 +24,10 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY "requirements.txt" "/opt/proxy-checker/requirements.txt"
-COPY "docker-patch-nodriver.py" "/tmp/docker-patch-nodriver.py"
 
 RUN python -m pip install --upgrade pip \
-    && python -m pip install -r "/opt/proxy-checker/requirements.txt" nodriver \
-    && python "/tmp/docker-patch-nodriver.py" \
-    && rm -f "/tmp/docker-patch-nodriver.py"
+    && python -m pip install -r "/opt/proxy-checker/requirements.txt" \
+    && python -m playwright install --with-deps chromium
 
 COPY . "/opt/proxy-checker/"
 

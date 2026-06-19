@@ -16,4 +16,3 @@ outputs
 work
 node_modules
 .vercel
-!docker-patch-nodriver.py

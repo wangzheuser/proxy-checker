@@ -1,6 +1,6 @@
 # Docker Compose 镜像独立部署
 
-本部署方式不修改业务源码，不依赖宿主机源码挂载。镜像内置默认配置 `config.json`，运行时配置和数据保存在 Docker 命名卷 `/app` 中。镜像构建阶段会对 `nodriver` 做兼容补丁，适配当前源码中 Deep Check 使用的 Chrome 参数。
+本部署方式不修改业务源码，不依赖宿主机源码挂载。镜像内置默认配置 `config.json`，运行时配置和数据保存在 Docker 命名卷 `/app` 中。镜像构建阶段会安装 Playwright Chromium，用于可选的浏览器真实检测。
 
 ## 配置原则
 
@@ -83,7 +83,8 @@ curl -s -X POST "http://127.0.0.1:8888/api/capabilities" \
 {
   "auto_mode": true,
   "fetch_proxies": true,
-  "nodriver": true,
+  "playwright": true,
+  "browser_check": true,
   "xvfb": true,
   "deep_check": true
 }

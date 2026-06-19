@@ -58,6 +58,7 @@ source "${VENV_DIR}/bin/activate"
 echo "安装/更新 Python 依赖..."
 python -m pip install --upgrade pip
 python -m pip install -r "${ROOT_DIR}/requirements.txt"
+python -m playwright install chromium
 
 echo "启动 Proxy Checker 服务..."
 python3 "${ROOT_DIR}/server.py" &
